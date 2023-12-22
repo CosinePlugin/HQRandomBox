@@ -1,0 +1,14 @@
+# 자동 저장 주기 (틱 단위)
+auto-save-period: 6000
+
+message:
+  inventory-full: "&c인벤토리에 공간이 부족합니다."
+
+# 뽑았을 때
+pick-effect:
+  # %item% = 아이템 이름
+  message: "&6%item% 획득!"
+  sound:
+    name: "minecraft:ui.toast.challenge_complete"
+    volume: 1
+    pitch: 1
