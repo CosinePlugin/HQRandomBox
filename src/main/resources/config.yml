@@ -1,5 +1,15 @@
+config-version: 1
+
 # 자동 저장 주기 (틱 단위)
 auto-save-period: 6000
+
+# 보상을 HQGiftBox로 보낼지 (false일 시 인벤토리로 지급)
+use-giftbox: false
+
+giftbox:
+  enabled: false
+  display-name: "&e랜덤 박스 보상"
+  lore: []
 
 message:
   inventory-full: "&c인벤토리에 공간이 부족합니다."

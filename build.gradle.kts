@@ -3,13 +3,11 @@ plugins {
 }
 
 group = "kr.cosine.randombox"
-version = "1.0.0"
+version = "1.0.1"
 
 repositories {
-    mavenCentral()
-    mavenLocal()
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
-    //maven("https://maven.hqservice.kr/repository/maven-public/")
+    maven("https://maven.hqservice.kr/repository/maven-public/")
 }
 
 dependencies {
@@ -19,6 +17,7 @@ dependencies {
     compileOnly("kr.hqservice", "hqframework-bukkit-command", "1.0.1-SNAPSHOT")
     compileOnly("kr.hqservice", "hqframework-bukkit-inventory", "1.0.1-SNAPSHOT")
     compileOnly("kr.hqservice", "hqframework-bukkit-nms", "1.0.1-SNAPSHOT")
+    compileOnly("kr.hqservice", "hqgiftbox-api", "1.0.0")
 
     testImplementation(kotlin("test"))
     testImplementation(kotlin("reflect"))

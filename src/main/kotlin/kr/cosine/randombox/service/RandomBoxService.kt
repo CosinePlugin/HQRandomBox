@@ -13,6 +13,7 @@ import kr.hqservice.framework.global.core.component.Service
 import kr.hqservice.framework.nms.extension.getDisplayName
 import kr.hqservice.framework.nms.extension.getNmsItemStack
 import kr.hqservice.framework.nms.extension.nms
+import kr.hqservice.giftbox.api.GiftBoxAPI
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
@@ -29,6 +30,9 @@ class RandomBoxService(
     private companion object {
         const val RANDOM_BOX_KEY = "HQRandomBox"
     }
+
+    private val giftBoxFactory by lazy { GiftBoxAPI.getFacto() }
+    private val giftBoxService by lazy { GiftBoxAPI.getBoxService() }
 
     fun createRandomBox(key: String): Boolean {
         if (randomBoxRegistry.isRandomBox(key)) return false
@@ -82,7 +86,13 @@ class RandomBoxService(
         val chanceItem = randomBox.getRandomChanceItem()
         val chanceItemStack = chanceItem.getOriginalItemStack()
         itemStack.amount--
-        playerInventory.addItem(chanceItemStack)
+        val giftBoxSetting = settingConfig.giftBoxSetting
+        if (giftBoxSetting.isEnabled) {
+            val giftBox = giftBoxFactory.of(giftBoxSetting.displayName, giftBoxSetting.lore, itemStack)
+            giftBoxService.send(player.uniqueId, giftBox)
+        } else {
+            playerInventory.addItem(chanceItemStack)
+        }
         settingConfig.pickEffect.playEffect(player, chanceItemStack.getDisplayName())
         return true
     }
