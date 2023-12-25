@@ -88,7 +88,7 @@ class RandomBoxService(
         itemStack.amount--
         val giftBoxSetting = settingConfig.giftBoxSetting
         if (giftBoxSetting.isEnabled) {
-            val giftBox = giftBoxFactory.of(giftBoxSetting.displayName, giftBoxSetting.lore, itemStack)
+            val giftBox = giftBoxFactory.of(giftBoxSetting.displayName, giftBoxSetting.lore, chanceItemStack)
             giftBoxService.send(player.uniqueId, giftBox)
         } else {
             playerInventory.addItem(chanceItemStack)
