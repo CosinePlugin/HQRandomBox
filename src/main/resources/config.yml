@@ -1,0 +1,25 @@
+gift-box:
+  # 보상을 HQGiftBox로 보낼지 (false일 시 인벤토리로 지급)
+  enabled: false
+  display-name: "&e랜덤 박스 보상"
+  lore: []
+
+# %player% = 뽑은 유저
+# %item% = 뽑은 아이템
+# %chance% = 뽑은 아이템의 확률
+message:
+  lack-inventory:
+    - "&c인벤토리에 공간이 부족합니다."
+  player-pick:
+    - "&a%item%을(를) 뽑았습니다!"
+  broadcast-pick:
+    - ""
+    - "&a%player%님이 %item%을(를) 뽑았습니다!"
+    - ""
+
+# 뽑은 유저에게 들리는 효과음
+sound:
+  enabled: false
+  name: "minecraft:ui.toast.challenge_complete"
+  volume: 1
+  pitch: 2

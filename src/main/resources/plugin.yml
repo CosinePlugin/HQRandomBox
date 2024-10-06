@@ -1,0 +1,9 @@
+name: HQRandomBox
+main: kr.cosine.randombox.HQRandomBox
+version: 1.0.0
+api-version: 1.17
+author: Cosine_A
+depend:
+  - HQFramework
+softdepend:
+  - HQGiftBox
