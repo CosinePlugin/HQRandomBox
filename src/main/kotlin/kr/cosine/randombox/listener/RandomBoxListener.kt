@@ -1,12 +1,17 @@
 package kr.cosine.randombox.listener
 
+import kr.cosine.randombox.registry.ChatObserverRegistry
 import kr.cosine.randombox.view.RandomBoxService
+import kr.hqservice.framework.bukkit.core.listener.HandleOrder
 import kr.hqservice.framework.bukkit.core.listener.Listener
 import kr.hqservice.framework.bukkit.core.listener.Subscribe
+import org.bukkit.event.player.AsyncPlayerChatEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.player.PlayerQuitEvent
 
 @Listener
 class RandomBoxListener(
+    private val chatObserverRegistry: ChatObserverRegistry,
     private val randomBoxService: RandomBoxService
 ) {
     @Subscribe
@@ -16,5 +21,15 @@ class RandomBoxListener(
         if (randomBoxService.useRandomBox(event.player, itemStack)) {
             event.isCancelled = true
         }
+    }
+
+    @Subscribe(handleOrder = HandleOrder.FIRST, ignoreCancelled = true)
+    fun onPlayerAsyncChat(event: AsyncPlayerChatEvent) {
+        chatObserverRegistry.observe(event)
+    }
+
+    @Subscribe
+    fun onPlayerQuit(event: PlayerQuitEvent) {
+        chatObserverRegistry.removeChatObserver(event.player.uniqueId)
     }
 }

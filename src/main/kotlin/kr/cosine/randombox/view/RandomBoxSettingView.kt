@@ -1,28 +1,29 @@
 package kr.cosine.randombox.view
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kr.cosine.fishadder.observer.ChatObserver
 import kr.cosine.randombox.data.RandomBox
 import kr.cosine.randombox.data.RandomBoxItemStack
+import kr.cosine.randombox.registry.ChatObserverRegistry
 import kr.cosine.randombox.registry.RandomBoxRegistry
 import kr.hqservice.framework.bukkit.core.HQBukkitPlugin
-import kr.hqservice.framework.bukkit.core.coroutine.bukkitDelay
 import kr.hqservice.framework.bukkit.core.coroutine.extension.BukkitMain
 import kr.hqservice.framework.bukkit.core.extension.editMeta
 import kr.hqservice.framework.inventory.button.HQButtonBuilder
 import kr.hqservice.framework.inventory.container.HQContainer
 import kr.hqservice.framework.nms.extension.getDisplayName
-import kr.hqservice.framework.nms.extension.virtual
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.player.AsyncPlayerChatEvent
 import org.bukkit.inventory.Inventory
 
 class RandomBoxSettingView(
     private val plugin: HQBukkitPlugin,
+    private val chatObserverRegistry: ChatObserverRegistry,
     private val randomBoxRegistry: RandomBoxRegistry,
     private val randomBox: RandomBox
 ) : HQContainer(54, "${randomBox.name} 랜덤박스 설정") {
@@ -141,38 +142,45 @@ class RandomBoxSettingView(
 
     private fun setRandomBoxItemStackChance(player: Player, randomBoxItemStack: RandomBoxItemStack) {
         player.closeInventory()
-        player.sendMessage("§a'취소'를 입력 시 설정이 취소됩니다.")
-        delayLaunch {
-            player.virtual {
-                sign {
-                    setConfirmHandler {
-                        val chanceText = it.firstOrNull() ?: run {
-                            player.sendMessage("§c확률을 입력해주세요.")
-                            return@setConfirmHandler false
-                        }
-                        if (chanceText == "취소") {
-                            player.sendMessage("§a설정이 취소되었습니다.")
-                            reopen(player)
-                            return@setConfirmHandler true
-                        }
-                        val chance = chanceText.toDoubleOrNull() ?: run {
-                            player.sendMessage("§c숫자만 입력할 수 있습니다.")
-                            return@setConfirmHandler false
-                        }
-                        if (chance <= 0.0) {
-                            player.sendMessage("§c양수만 입력할 수 있습니다.")
-                            return@setConfirmHandler false
-                        }
-                        randomBoxItemStack.editMeta {
-                            this.chance = chance
-                        }
-                        randomBoxRegistry.isChanged = true
-                        player.sendMessage("§a${randomBoxItemStack.toItemStack().getDisplayName()}의 확률을 ${chance}퍼센트로 설정하였습니다.")
-                        reopen(player)
-                        return@setConfirmHandler true
-                    }
+        player.sendMessage("§a확률을 입력해주세요. §c(취소: -)")
+        val playerUniqueId = player.uniqueId
+        val chatObserver = object : ChatObserver {
+            override fun onChat(event: AsyncPlayerChatEvent) {
+                if (event.player.uniqueId != playerUniqueId) return
+                event.isCancelled = true
+                val message = event.message
+                if (message == "-") {
+                    chatObserverRegistry.removeChatObserver(playerUniqueId)
+                    player.sendMessage("§a설정이 취소되었습니다.")
+                    reopen(player)
+                    return
                 }
+                val chance = message.toDoubleOrNull() ?: run {
+                    player.sendMessage("§c숫자만 입력할 수 있습니다.")
+                    return
+                }
+                if (chance <= 0.0) {
+                    player.sendMessage("§c양수만 입력할 수 있습니다.")
+                    return
+                }
+                chatObserverRegistry.removeChatObserver(playerUniqueId)
+
+                randomBoxItemStack.editMeta {
+                    this.chance = chance
+                }
+                randomBoxRegistry.isChanged = true
+
+                player.sendMessage("§a${randomBoxItemStack.toItemStack().getDisplayName()}의 확률을 ${chance}퍼센트로 설정하였습니다.")
+                reopen(player)
             }
+        }
+        chatObserverRegistry.addChatObserver(playerUniqueId, chatObserver)
+    }
+
+    private fun reopen(player: Player) {
+        plugin.launch(Dispatchers.BukkitMain) {
+            refresh()
+            open(player)
         }
     }
 
@@ -187,20 +195,6 @@ class RandomBoxSettingView(
 
     private fun Player.playButtonSound() {
         playSound(location, Sound.UI_BUTTON_CLICK, 1f, 1f)
-    }
-
-    private fun reopen(player: Player) {
-        delayLaunch {
-            refresh()
-            open(player)
-        }
-    }
-
-    private fun delayLaunch(block: suspend CoroutineScope.() -> Unit) {
-        plugin.launch(Dispatchers.BukkitMain) {
-            bukkitDelay(1)
-            block()
-        }
     }
 
     private companion object {
