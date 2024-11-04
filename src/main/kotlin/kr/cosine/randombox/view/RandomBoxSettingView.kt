@@ -2,7 +2,7 @@ package kr.cosine.randombox.view
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kr.cosine.fishadder.observer.ChatObserver
+import kr.cosine.randombox.observer.ChatObserver
 import kr.cosine.randombox.data.RandomBox
 import kr.cosine.randombox.data.RandomBoxItemStack
 import kr.cosine.randombox.registry.ChatObserverRegistry

@@ -1,4 +1,4 @@
-package kr.cosine.fishadder.observer
+package kr.cosine.randombox.observer
 
 import org.bukkit.event.player.AsyncPlayerChatEvent
 
