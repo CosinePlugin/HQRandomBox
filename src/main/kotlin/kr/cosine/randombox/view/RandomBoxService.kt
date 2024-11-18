@@ -73,6 +73,7 @@ class RandomBoxService(
             it.replace("%item%", itemStack.getDisplayName())
                 .replace("%chance%", randomBoxItemMeta.chance.removeZero())
                 .replace("%player%", player.name)
+                .replace("%player_display%", player.displayName)
         }
         val playerPickMessage = Message.PLAYER_PICK.getMessages(replace)
         playerPickMessage.forEach(player::sendMessage)

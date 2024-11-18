@@ -5,6 +5,7 @@ gift-box:
   lore: []
 
 # %player% = 뽑은 유저
+# %player_display% = 뽑은 유저의 디스플레이 이름
 # %item% = 뽑은 아이템
 # %chance% = 뽑은 아이템의 확률
 message:
