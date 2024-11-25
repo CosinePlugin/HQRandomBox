@@ -1,9 +1,11 @@
 package kr.cosine.randombox.data
 
 import com.google.gson.Gson
+import kr.hqservice.framework.nms.extension.getDisplayName
 import kr.hqservice.framework.nms.extension.getNmsItemStack
 import kr.hqservice.framework.nms.extension.nms
 import kr.hqservice.framework.nms.wrapper.item.NmsNBTTagCompoundWrapper
+import org.bukkit.Bukkit
 import org.bukkit.inventory.ItemStack
 
 class RandomBoxItemStack(
@@ -11,7 +13,7 @@ class RandomBoxItemStack(
 ) {
     private val tag get() = itemStack.getNmsItemStack().getTag()
 
-    var randomBoxItemMeta = tag.getRandomBoxItemMeta(RANDOM_BOX_ITEM_META_KEY)
+    var randomBoxItemMeta = tag.getRandomBoxItemMeta(itemStack, RANDOM_BOX_ITEM_META_KEY)
         private set
 
     fun setRandomBoxItemMeta(randomBoxItemMeta: RandomBoxItemMeta) {
@@ -61,9 +63,13 @@ class RandomBoxItemStack(
             setString(key, json)
         }
 
-        private fun NmsNBTTagCompoundWrapper.getRandomBoxItemMeta(key: String): RandomBoxItemMeta {
+        private fun NmsNBTTagCompoundWrapper.getRandomBoxItemMeta(itemStack: ItemStack, key: String): RandomBoxItemMeta {
             val json = getString(key)
-            return gson.fromJson(json, RandomBoxItemMeta::class.java)
+            return runCatching {
+                gson.fromJson(json, RandomBoxItemMeta::class.java)
+            }.getOrNull() ?: RandomBoxItemMeta.init().apply { 
+                Bukkit.getLogger().info("${itemStack.getDisplayName()}(으)로부터 RandomBoxItemMeta를 찾을 수 없어, 새로운 RandomBoxItemMeta로 반환됩니다.")
+            }
         }
     }
 }
