@@ -2,38 +2,44 @@ package kr.cosine.randombox.registry
 
 import kr.cosine.randombox.data.RandomBox
 import kr.hqservice.framework.global.core.component.Bean
+import org.bukkit.inventory.ItemStack
 
 @Bean
 class RandomBoxRegistry {
-    private val _randomBoxMap = mutableMapOf<String, RandomBox>()
-    val randomBoxMap: Map<String, RandomBox> get() = _randomBoxMap
-
-    var isChanged = false
+    private val randomBoxMap = mutableMapOf<String, RandomBox>()
 
     fun restore(randomBoxRegistry: RandomBoxRegistry) {
-        _randomBoxMap.clear()
-        _randomBoxMap.putAll(randomBoxRegistry.randomBoxMap)
+        randomBoxMap.clear()
+        randomBoxMap.putAll(randomBoxRegistry.randomBoxMap)
     }
 
     fun isRandomBox(name: String): Boolean {
-        return _randomBoxMap.containsKey(name)
+        return randomBoxMap.containsKey(name)
     }
 
     fun findRandomBox(name: String): RandomBox? {
-        return _randomBoxMap[name]
+        return randomBoxMap[name]
     }
 
     fun setRandomBox(name: String, randomBox: RandomBox) {
-        _randomBoxMap[name] = randomBox
+        randomBoxMap[name] = randomBox
         isChanged = true
     }
 
     fun removeRandomBox(name: String) {
-        _randomBoxMap.remove(name)
+        randomBoxMap.remove(name)
         isChanged = true
     }
 
+    fun findRandomBoxByItemStack(itemStack: ItemStack): RandomBox? {
+        return randomBoxMap.entries.find { it.value.isSimilar(itemStack) }?.value
+    }
+
     fun getNames(): List<String> {
-        return _randomBoxMap.keys.toList()
+        return randomBoxMap.keys.toList()
+    }
+
+    companion object {
+        var isChanged = false
     }
 }

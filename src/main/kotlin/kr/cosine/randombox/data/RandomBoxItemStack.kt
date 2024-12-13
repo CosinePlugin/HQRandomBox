@@ -1,6 +1,7 @@
 package kr.cosine.randombox.data
 
 import com.google.gson.Gson
+import kr.cosine.randombox.registry.RandomBoxRegistry.Companion.isChanged
 import kr.hqservice.framework.nms.extension.getNmsItemStack
 import kr.hqservice.framework.nms.extension.nms
 import kr.hqservice.framework.nms.wrapper.item.NmsNBTTagCompoundWrapper
@@ -19,6 +20,7 @@ class RandomBoxItemStack(
             tag {
                 setRandomBoxItemMeta(RANDOM_BOX_ITEM_META_KEY, randomBoxItemMeta)
                 this@RandomBoxItemStack.randomBoxItemMeta = randomBoxItemMeta
+                isChanged = true
             }
         }
     }

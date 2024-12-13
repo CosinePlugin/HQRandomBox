@@ -2,11 +2,11 @@ package kr.cosine.randombox.command
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kr.cosine.randombox.config.RandomBoxConfig
 import kr.cosine.randombox.config.SettingConfig
 import kr.cosine.randombox.data.RandomBox
+import kr.cosine.randombox.json.RandomBoxJson
+import kr.cosine.randombox.service.RandomBoxService
 import kr.cosine.randombox.service.RandomBoxViewService
-import kr.cosine.randombox.view.RandomBoxService
 import kr.hqservice.framework.command.ArgumentLabel
 import kr.hqservice.framework.command.Command
 import kr.hqservice.framework.command.CommandExecutor
@@ -16,7 +16,7 @@ import org.bukkit.entity.Player
 @Command(label = "랜덤박스관리", isOp = true)
 class RandomBoxAdminCommand(
     private val settingConfig: SettingConfig,
-    private val randomBoxConfig: RandomBoxConfig,
+    private val randomBoxJson: RandomBoxJson,
     private val randomBoxService: RandomBoxService,
     private val randomBoxViewService: RandomBoxViewService
 ) {
@@ -50,30 +50,50 @@ class RandomBoxAdminCommand(
         randomBoxViewService.openRandomBoxSettingView(player, randomBox)
     }
 
-    @CommandExecutor("적용", "손에 든 아이템을 랜덤박스로 만듭니다.", priority = 4)
-    fun makeRandomBox(
+    @CommandExecutor("적용", "손에 든 아이템을 랜덤박스의 사용 아이템으로 적용합니다.", priority = 4)
+    fun setRandomBoxItemStack(
         player: Player,
         @ArgumentLabel("이름") randomBox: RandomBox
     ) {
-        val itemStack = player.inventory.itemInMainHand
+        val itemStack = player.inventory.itemInMainHand.clone()
         if (itemStack.type.isAir) {
             player.sendMessage("§c손에 아이템을 들어주세요.")
             return
         }
-        val name = randomBox.name
-        randomBoxService.makeRandomBox(itemStack, name)
-        player.sendMessage("§a손에 든 아이템을 $name 랜덤박스로 만들었습니다.")
+        randomBox.setItemStack(itemStack)
+        player.sendMessage("§a손에 든 아이템을 ${randomBox.name} 랜덤박스의 사용 아이템으로 적용하였습니다.")
     }
 
-    @CommandExecutor("저장", "변경된 사항을 수동으로 저장합니다.", priority = 5)
+    @CommandExecutor("지급", "랜덤박스의 사용 아이템을 지급받습니다.", priority = 5)
+    fun giveRandomBoxItemStack(
+        sender: CommandSender,
+        @ArgumentLabel("이름") randomBox: RandomBox,
+        @ArgumentLabel("유저") target: Player?
+    ) {
+        val receiver = target ?: sender
+        if (receiver !is Player) {
+            receiver.sendMessage("§c인게임에서 실행하거나, 타겟을 지정해주세요.")
+            return
+        }
+        val itemStack = randomBox.findItemStack() ?: run {
+            sender.sendMessage("§c랜덤박스의 사용 아이템이 설정되어 있지 않습니다.")
+            return
+        }
+        receiver.inventory.addItem(itemStack)
+        if (sender == target) {
+            sender.sendMessage("§a${randomBox.name} 랜덤박스의 사용 아이템을 지급받았습니다.")
+        }
+    }
+
+    @CommandExecutor("저장", "변경된 사항을 수동으로 저장합니다.", priority = 6)
     suspend fun save(sender: CommandSender) {
         withContext(Dispatchers.IO) {
-            randomBoxConfig.save()
+            randomBoxJson.save()
             sender.sendMessage("§a변경된 사항을 수동으로 저장하였습니다.")
         }
     }
 
-    @CommandExecutor("리로드", "config.yml을 리로드합니다.", priority = 6)
+    @CommandExecutor("리로드", "config.yml을 리로드합니다.", priority = 7)
     fun reload(sender: CommandSender) {
         settingConfig.reload()
         sender.sendMessage("§aconfig.yml을 리로드하였습니다.")

@@ -3,7 +3,7 @@ package kr.cosine.randombox.registry
 import kr.cosine.randombox.observer.ChatObserver
 import kr.hqservice.framework.global.core.component.Bean
 import org.bukkit.event.player.AsyncPlayerChatEvent
-import java.util.UUID
+import java.util.*
 
 @Bean
 class ChatObserverRegistry {

@@ -2,11 +2,10 @@ package kr.cosine.randombox.view
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kr.cosine.randombox.observer.ChatObserver
 import kr.cosine.randombox.data.RandomBox
 import kr.cosine.randombox.data.RandomBoxItemStack
+import kr.cosine.randombox.observer.ChatObserver
 import kr.cosine.randombox.registry.ChatObserverRegistry
-import kr.cosine.randombox.registry.RandomBoxRegistry
 import kr.hqservice.framework.bukkit.core.HQBukkitPlugin
 import kr.hqservice.framework.bukkit.core.coroutine.extension.BukkitMain
 import kr.hqservice.framework.bukkit.core.extension.editMeta
@@ -24,12 +23,11 @@ import org.bukkit.inventory.Inventory
 class RandomBoxSettingView(
     private val plugin: HQBukkitPlugin,
     private val chatObserverRegistry: ChatObserverRegistry,
-    private val randomBoxRegistry: RandomBoxRegistry,
     private val randomBox: RandomBox
 ) : HQContainer(54, "${randomBox.name} 랜덤박스 설정") {
     private var page = 0
 
-    private val randomBoxItemStacks get() = randomBox.randomBoxItemStacks
+    private val randomBoxItemStacks get() = randomBox.getRandomBoxItemStacks()
     private var currentRandomBoxItemStacks = emptyList<RandomBoxItemStack>()
 
     override fun initialize(inventory: Inventory) {
@@ -114,7 +112,6 @@ class RandomBoxSettingView(
         when (event.click) {
             ClickType.SHIFT_RIGHT -> {
                 randomBox.removeRandomBoxItemStack(randomBoxItemStack)
-                randomBoxRegistry.isChanged = true
                 if (page > 0 && currentRandomBoxItemStacks.size != ITEM_SIZE && randomBoxItemStacks.size % ITEM_SIZE == 0) {
                     page--
                 }
@@ -131,7 +128,6 @@ class RandomBoxSettingView(
                 randomBoxItemStack.editMeta {
                     this.broadcast = !this.broadcast
                 }
-                randomBoxRegistry.isChanged = true
                 player.playButtonSound()
                 refresh()
             }
@@ -168,7 +164,6 @@ class RandomBoxSettingView(
                 randomBoxItemStack.editMeta {
                     this.chance = chance
                 }
-                randomBoxRegistry.isChanged = true
 
                 player.sendMessage("§a${randomBoxItemStack.toItemStack().getDisplayName()}의 확률을 ${chance}퍼센트로 설정하였습니다.")
                 reopen(player)
@@ -189,7 +184,6 @@ class RandomBoxSettingView(
         player.playButtonSound()
         val randomBoxItemStack = RandomBoxItemStack.of(itemStack)
         randomBox.addRandomBoxItemStack(randomBoxItemStack)
-        randomBoxRegistry.isChanged = true
         refresh()
     }
 

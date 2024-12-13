@@ -1,7 +1,7 @@
 package kr.cosine.randombox.listener
 
 import kr.cosine.randombox.registry.ChatObserverRegistry
-import kr.cosine.randombox.view.RandomBoxService
+import kr.cosine.randombox.service.RandomBoxService
 import kr.hqservice.framework.bukkit.core.listener.HandleOrder
 import kr.hqservice.framework.bukkit.core.listener.Listener
 import kr.hqservice.framework.bukkit.core.listener.Subscribe

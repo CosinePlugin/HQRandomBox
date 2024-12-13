@@ -3,8 +3,8 @@ package kr.cosine.randombox.config.module
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kr.cosine.randombox.config.RandomBoxConfig
 import kr.cosine.randombox.config.SettingConfig
+import kr.cosine.randombox.json.RandomBoxJson
 import kr.hqservice.framework.bukkit.core.HQBukkitPlugin
 import kr.hqservice.framework.bukkit.core.component.module.Module
 import kr.hqservice.framework.bukkit.core.component.module.Setup
@@ -16,23 +16,23 @@ import kr.hqservice.framework.bukkit.core.coroutine.element.TeardownOptionCorout
 class ConfigModule(
     private val plugin: HQBukkitPlugin,
     private val settingConfig: SettingConfig,
-    private val randomBoxConfig: RandomBoxConfig
+    private val randomBoxJson: RandomBoxJson
 ) {
     @Setup
     fun setup() {
         settingConfig.load()
-        randomBoxConfig.load()
+        randomBoxJson.load()
 
         plugin.launch(Dispatchers.IO + TeardownOptionCoroutineContextElement(true)) {
             while (isActive) {
                 bukkitDelay(1200) // 1분
-                randomBoxConfig.save()
+                randomBoxJson.save()
             }
         }
     }
 
     @Teardown
     fun teardown() {
-        randomBoxConfig.save()
+        randomBoxJson.save()
     }
 }

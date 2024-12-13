@@ -10,16 +10,7 @@ import kr.hqservice.framework.bukkit.core.extension.toItemArray
 import org.bukkit.inventory.ItemStack
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder
 
-class RandomBoxItemStackListTypeAdapter : TypeAdapter<RandomBoxItemStackList>() {
-    override fun write(jsonWriter: JsonWriter, randomBoxItemStacks: RandomBoxItemStackList) {
-        val compressedRandomBoxItemStacks = randomBoxItemStacks
-            .map(RandomBoxItemStack::toItemStack)
-            .toTypedArray<ItemStack?>()
-            .toByteArray()
-            .run(Base64Coder::encodeLines)
-        jsonWriter.value(compressedRandomBoxItemStacks)
-    }
-
+object RandomBoxItemStackListTypeAdapter : TypeAdapter<RandomBoxItemStackList>() {
     override fun read(jsonReader: JsonReader): RandomBoxItemStackList {
         return jsonReader.nextString()
             .run(Base64Coder::decodeLines)
@@ -27,5 +18,14 @@ class RandomBoxItemStackListTypeAdapter : TypeAdapter<RandomBoxItemStackList>() 
             .map(::RandomBoxItemStack)
             .toMutableList()
             .run(::RandomBoxItemStackList)
+    }
+
+    override fun write(jsonWriter: JsonWriter, randomBoxItemStacks: RandomBoxItemStackList) {
+        val compressedRandomBoxItemStacks = randomBoxItemStacks
+            .map(RandomBoxItemStack::toItemStack)
+            .toTypedArray<ItemStack?>()
+            .toByteArray()
+            .run(Base64Coder::encodeLines)
+        jsonWriter.value(compressedRandomBoxItemStacks)
     }
 }

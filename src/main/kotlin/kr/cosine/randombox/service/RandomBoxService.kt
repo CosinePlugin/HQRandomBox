@@ -1,14 +1,12 @@
-package kr.cosine.randombox.view
+package kr.cosine.randombox.service
 
 import kr.cosine.randombox.data.RandomBox
 import kr.cosine.randombox.enums.Message
-import kr.cosine.randombox.registry.SettingRegistry
 import kr.cosine.randombox.registry.RandomBoxRegistry
+import kr.cosine.randombox.registry.SettingRegistry
 import kr.hqservice.framework.global.core.component.Service
 import kr.hqservice.framework.netty.api.PacketSender
 import kr.hqservice.framework.nms.extension.getDisplayName
-import kr.hqservice.framework.nms.extension.getNmsItemStack
-import kr.hqservice.framework.nms.extension.nms
 import kr.hqservice.giftbox.api.GiftBoxAPI
 import net.md_5.bungee.api.chat.TextComponent
 import org.bukkit.Material
@@ -36,18 +34,8 @@ class RandomBoxService(
         randomBoxRegistry.removeRandomBox(name)
     }
 
-    fun makeRandomBox(itemStack: ItemStack, name: String) {
-        itemStack.nms {
-            tag {
-                setString(RANDOM_BOX_KEY, name)
-            }
-        }
-    }
-
     fun useRandomBox(player: Player, handItemStack: ItemStack): Boolean {
-        val name = handItemStack.getNmsItemStack().getTagOrNull()?.getStringOrNull(RANDOM_BOX_KEY) ?: return false
-        val randomBox = randomBoxRegistry.findRandomBox(name) ?: return false
-
+        val randomBox = randomBoxRegistry.findRandomBoxByItemStack(handItemStack) ?: return false
         val giftBoxSetting = settingRegistry.findGiftBoxSetting()
         val isGiftBoxEnabled = giftBoxSetting?.isEnabled == true
         val playerInventory = player.inventory
