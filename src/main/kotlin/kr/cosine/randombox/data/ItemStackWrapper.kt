@@ -8,6 +8,8 @@ import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder
 data class ItemStackWrapper(
     private val itemStack: ItemStack
 ) {
+    val material get() = itemStack.type
+
     fun isSimilar(itemStack: ItemStack): Boolean {
         return this.itemStack.isSimilar(itemStack)
     }

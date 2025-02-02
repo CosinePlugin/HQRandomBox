@@ -1,6 +1,7 @@
 package kr.cosine.randombox.data
 
 import kr.cosine.randombox.registry.RandomBoxRegistry.Companion.isChanged
+import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 import kotlin.math.ln
 import kotlin.random.Random
@@ -8,16 +9,17 @@ import kotlin.random.Random
 class RandomBox(
     val name: String
 ) {
-    private var itemStack: ItemStackWrapper? = null
+    private var itemStack = ItemStackWrapper(ItemStack(Material.AIR))
 
     private val randomBoxItemStacks = RandomBoxItemStackList()
 
     fun isSimilar(itemStack: ItemStack): Boolean {
-        return this.itemStack?.isSimilar(itemStack) == true
+        return this.itemStack.isSimilar(itemStack)
     }
 
     fun findItemStack(): ItemStack? {
-        return itemStack?.clone()
+        if (itemStack.material.isAir) return null
+        return itemStack.clone()
     }
 
     fun setItemStack(itemStack: ItemStack) {

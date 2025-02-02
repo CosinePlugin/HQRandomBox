@@ -17,6 +17,7 @@ class RandomBoxJson(
 ) {
     private val gson = GsonBuilder()
         .setPrettyPrinting()
+        .disableHtmlEscaping()
         .registerTypeAdapter(
             ItemStackWrapper::class.java,
             ItemStackWrapperTypeAdapter
