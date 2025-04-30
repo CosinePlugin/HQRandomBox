@@ -1,8 +1,9 @@
 name: HQRandomBox
 main: kr.cosine.randombox.HQRandomBox
-version: 2.0.1
+version: 2.1.0
 api-version: 1.17
 author: Cosine_A
+folia-supported: true
 depend:
   - HQFramework
 softdepend:

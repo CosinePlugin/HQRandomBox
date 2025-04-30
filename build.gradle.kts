@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "kr.cosine.randombox"
-version = "2.0.1"
+version = "2.1.0"
 
 repositories {
     maven("https://maven.hqservice.kr/repository/maven-public")
