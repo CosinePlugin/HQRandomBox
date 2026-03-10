@@ -10,10 +10,17 @@ import org.bukkit.inventory.ItemStack
 class RandomBoxItemStack(
     private val itemStack: ItemStack
 ) {
+    val maxStackSize get() = itemStack.maxStackSize
+
     private val tag get() = itemStack.getNmsItemStack().getTag()
 
     var randomBoxItemMeta = tag.getRandomBoxItemMeta(RANDOM_BOX_ITEM_META_KEY)
         private set
+
+    fun setAmount(amount: Int) {
+        itemStack.amount = amount
+        isChanged = true
+    }
 
     fun setRandomBoxItemMeta(randomBoxItemMeta: RandomBoxItemMeta) {
         itemStack.nms {

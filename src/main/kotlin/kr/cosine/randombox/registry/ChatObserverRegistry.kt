@@ -1,25 +1,25 @@
 package kr.cosine.randombox.registry
 
 import kr.cosine.randombox.observer.ChatObserver
-import kr.hqservice.framework.global.core.component.Bean
 import org.bukkit.event.player.AsyncPlayerChatEvent
 import java.util.*
 
-@Bean
-class ChatObserverRegistry {
-    private val chatObservers = mutableMapOf<UUID, ChatObserver>()
+object ChatObserverRegistry {
+    private val chatObserverMap = mutableMapOf<UUID, ChatObserver>()
 
-    fun addChatObserver(subscriber: UUID, chatObserver: ChatObserver) {
-        chatObservers[subscriber] = chatObserver
+    fun set(subscriber: UUID, chatObserver: ChatObserver) {
+        chatObserverMap[subscriber] = chatObserver
     }
 
-    fun removeChatObserver(subscriber: UUID) {
-        chatObservers.remove(subscriber)
+    fun remove(subscriber: UUID) {
+        chatObserverMap.remove(subscriber)
     }
 
-    fun observe(event: AsyncPlayerChatEvent) {
-        chatObservers.forEach {
-            it.value.onChat(event)
+    fun observe(subscriber: UUID, event: AsyncPlayerChatEvent) {
+        val chatObserver = chatObserverMap[subscriber]
+        if (chatObserver != null) {
+            event.isCancelled = true
+            chatObserver.onChat(event.message)
         }
     }
 }

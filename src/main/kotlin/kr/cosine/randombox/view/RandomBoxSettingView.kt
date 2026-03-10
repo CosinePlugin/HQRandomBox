@@ -6,7 +6,9 @@ import kr.cosine.randombox.data.RandomBox
 import kr.cosine.randombox.data.RandomBoxItemStack
 import kr.cosine.randombox.observer.ChatObserver
 import kr.cosine.randombox.registry.ChatObserverRegistry
+import kr.cosine.randombox.registry.RandomBoxRegistry
 import kr.hqservice.framework.bukkit.core.HQBukkitPlugin
+import kr.hqservice.framework.bukkit.core.coroutine.bukkitDelay
 import kr.hqservice.framework.bukkit.core.coroutine.extension.BukkitMain
 import kr.hqservice.framework.bukkit.core.extension.editMeta
 import kr.hqservice.framework.inventory.button.HQButtonBuilder
@@ -17,12 +19,10 @@ import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryClickEvent
-import org.bukkit.event.player.AsyncPlayerChatEvent
 import org.bukkit.inventory.Inventory
 
 class RandomBoxSettingView(
     private val plugin: HQBukkitPlugin,
-    private val chatObserverRegistry: ChatObserverRegistry,
     private val randomBox: RandomBox
 ) : HQContainer(54, "${randomBox.name} 랜덤박스 설정") {
     private var page = 0
@@ -48,6 +48,7 @@ class RandomBoxSettingView(
                     "",
                     "§a좌클릭 §7▸ §f확률을 설정합니다.",
                     "§b우클릭 §7▸ §f공지 여부를 토글합니다.",
+                    "§e쉬프트+좌클릭 §7▸ §f개수를 설정합니다.",
                     "§c쉬프트+우클릭 §7▸ §f목록에서 삭제합니다."
                 )
             }
@@ -110,6 +111,11 @@ class RandomBoxSettingView(
     private fun onTopClick(event: InventoryClickEvent, player: Player) {
         val randomBoxItemStack = event.randomBoxItemStack ?: return
         when (event.click) {
+            ClickType.SHIFT_LEFT -> {
+                player.playButtonSound()
+                setAmount(player, randomBoxItemStack)
+            }
+
             ClickType.SHIFT_RIGHT -> {
                 randomBox.removeRandomBoxItemStack(randomBoxItemStack)
                 if (page > 0 && currentRandomBoxItemStacks.size != ITEM_SIZE && randomBoxItemStacks.size % ITEM_SIZE == 0) {
@@ -137,43 +143,68 @@ class RandomBoxSettingView(
     }
 
     private fun setRandomBoxItemStackChance(player: Player, randomBoxItemStack: RandomBoxItemStack) {
-        player.closeInventory()
         player.sendMessage("§a확률을 입력해주세요. §c(취소: -)")
-        val playerUniqueId = player.uniqueId
-        val chatObserver = object : ChatObserver {
-            override fun onChat(event: AsyncPlayerChatEvent) {
-                if (event.player.uniqueId != playerUniqueId) return
-                event.isCancelled = true
-                val message = event.message
-                if (message == "-") {
-                    chatObserverRegistry.removeChatObserver(playerUniqueId)
-                    player.sendMessage("§a설정이 취소되었습니다.")
-                    reopen(player)
-                    return
-                }
-                val chance = message.toDoubleOrNull() ?: run {
-                    player.sendMessage("§c숫자만 입력할 수 있습니다.")
-                    return
-                }
-                if (chance <= 0.0) {
-                    player.sendMessage("§c양수만 입력할 수 있습니다.")
-                    return
-                }
-                chatObserverRegistry.removeChatObserver(playerUniqueId)
-
-                randomBoxItemStack.editMeta {
-                    this.chance = chance
-                }
-
-                player.sendMessage("§a${randomBoxItemStack.toItemStack().getDisplayName()}의 확률을 ${chance}퍼센트로 설정하였습니다.")
-                reopen(player)
+        startChatObserver(player) { chanceText ->
+            val chance = chanceText.toDoubleOrNull() ?: run {
+                player.sendMessage("§c숫자만 입력할 수 있습니다.")
+                return@startChatObserver false
             }
+            if (chance <= 0.0) {
+                player.sendMessage("§c양수만 입력할 수 있습니다.")
+                return@startChatObserver false
+            }
+            randomBoxItemStack.editMeta {
+                this.chance = chance
+            }
+            player.sendMessage("§a${randomBoxItemStack.toItemStack().getDisplayName()}의 확률을 ${chance}퍼센트로 설정하였습니다.")
+            return@startChatObserver true
         }
-        chatObserverRegistry.addChatObserver(playerUniqueId, chatObserver)
     }
 
-    private fun reopen(player: Player) {
+    private fun setAmount(player: Player, randomBoxItemStack: RandomBoxItemStack) {
+        player.sendMessage("§a개수를 입력해주세요. §c(취소: -)")
+        startChatObserver(player) { amountText ->
+            val amount = amountText.toIntOrNull() ?: run {
+                player.sendMessage("§c숫자만 입력할 수 있습니다.")
+                return@startChatObserver false
+            }
+            if (amount <= 0) {
+                player.sendMessage("§c양수만 입력할 수 있습니다.")
+                return@startChatObserver false
+            }
+            if (amount > randomBoxItemStack.maxStackSize) {
+                player.sendMessage("§c최대 수량을 넘을 수 없습니다.")
+                return@startChatObserver false
+            }
+            randomBoxItemStack.setAmount(amount)
+            player.sendMessage("§a${randomBoxItemStack.toItemStack().getDisplayName()}의 개수를 ${amount}개로 설정하였습니다.")
+            return@startChatObserver true
+        }
+    }
+
+    private fun startChatObserver(player: Player, onChat: (String) -> Boolean) {
+        player.closeInventory()
+        val playerUniqueId = player.uniqueId
+        val chatObserver = object : ChatObserver {
+            override fun onChat(message: String) {
+                if (message == "-") {
+                    ChatObserverRegistry.remove(playerUniqueId)
+                    player.sendMessage("§a설정이 취소되었습니다.")
+                    delayReopen(player)
+                    return
+                }
+                if (onChat(message)) {
+                    ChatObserverRegistry.remove(playerUniqueId)
+                    delayReopen(player)
+                }
+            }
+        }
+        ChatObserverRegistry.set(playerUniqueId, chatObserver)
+    }
+
+    private fun delayReopen(player: Player) {
         plugin.launch(Dispatchers.BukkitMain) {
+            bukkitDelay(1)
             refresh()
             open(player)
         }

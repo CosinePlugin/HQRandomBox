@@ -11,7 +11,6 @@ import org.bukkit.event.player.PlayerQuitEvent
 
 @Listener
 class RandomBoxListener(
-    private val chatObserverRegistry: ChatObserverRegistry,
     private val randomBoxService: RandomBoxService
 ) {
     @Subscribe
@@ -23,13 +22,13 @@ class RandomBoxListener(
         }
     }
 
-    @Subscribe(handleOrder = HandleOrder.FIRST, ignoreCancelled = true)
-    fun onPlayerAsyncChat(event: AsyncPlayerChatEvent) {
-        chatObserverRegistry.observe(event)
+    @Subscribe(HandleOrder.FIRST, true)
+    fun onAsyncPlayerChat(event: AsyncPlayerChatEvent) {
+        ChatObserverRegistry.observe(event.player.uniqueId, event)
     }
 
-    @Subscribe
+    @Subscribe(HandleOrder.LAST, true)
     fun onPlayerQuit(event: PlayerQuitEvent) {
-        chatObserverRegistry.removeChatObserver(event.player.uniqueId)
+        ChatObserverRegistry.remove(event.player.uniqueId)
     }
 }
